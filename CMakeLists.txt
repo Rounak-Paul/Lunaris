@@ -21,7 +21,10 @@ add_subdirectory(vendors/tinyvk)
 set(LUNARIS_SOURCES
     src/main.cpp
     src/core/application.cpp
+    src/core/job_system.cpp
     src/editor/editor_layer.cpp
+    src/editor/workspace.cpp
+    src/plugin/plugin_manager.cpp
 )
 
 add_executable(lunaris ${LUNARIS_SOURCES})
