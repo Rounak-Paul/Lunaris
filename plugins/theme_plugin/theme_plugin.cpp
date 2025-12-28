@@ -97,18 +97,18 @@ void ThemePlugin::apply_minimalist(Theme* theme) {
 void ThemePlugin::apply_retro(Theme* theme) {
     theme->set_style(ThemeStyle::Dark);
     theme->set_primary_color(Color(0.25f, 0.45f, 0.65f, 1.0f));
-    theme->set_background(Color(0.12f, 0.12f, 0.14f, 1.0f));
-    theme->set_background_alt(Color(0.16f, 0.16f, 0.18f, 1.0f));
-    theme->set_surface(Color(0.20f, 0.20f, 0.22f, 1.0f));
-    theme->set_text(Color(0.9f, 0.9f, 0.85f, 1.0f));
-    theme->set_text_dim(Color(0.55f, 0.55f, 0.50f, 1.0f));
-    theme->set_border(Color(0.35f, 0.35f, 0.38f, 1.0f));
-    theme->set_accent(Color(0.3f, 0.5f, 0.7f, 1.0f));
-    theme->set_accent_hover(Color(0.4f, 0.6f, 0.8f, 1.0f));
-    theme->set_accent_active(Color(0.25f, 0.45f, 0.65f, 1.0f));
-    theme->set_success(Color(0.3f, 0.6f, 0.3f, 1.0f));
-    theme->set_warning(Color(0.75f, 0.6f, 0.2f, 1.0f));
-    theme->set_error(Color(0.7f, 0.25f, 0.25f, 1.0f));
+    theme->set_background(Color(0.75f, 0.75f, 0.75f, 1.0f));
+    theme->set_background_alt(Color(0.70f, 0.70f, 0.70f, 1.0f));
+    theme->set_surface(Color(0.75f, 0.75f, 0.75f, 1.0f));
+    theme->set_text(Color(0.0f, 0.0f, 0.0f, 1.0f));
+    theme->set_text_dim(Color(0.35f, 0.35f, 0.35f, 1.0f));
+    theme->set_border(Color(0.5f, 0.5f, 0.5f, 1.0f));
+    theme->set_accent(Color(0.0f, 0.0f, 0.5f, 1.0f));
+    theme->set_accent_hover(Color(0.0f, 0.0f, 0.6f, 1.0f));
+    theme->set_accent_active(Color(0.0f, 0.0f, 0.4f, 1.0f));
+    theme->set_success(Color(0.0f, 0.5f, 0.0f, 1.0f));
+    theme->set_warning(Color(0.6f, 0.5f, 0.0f, 1.0f));
+    theme->set_error(Color(0.6f, 0.0f, 0.0f, 1.0f));
 
     ImGuiStyle& style = ImGui::GetStyle();
     style.WindowRounding = 0.0f;
@@ -123,18 +123,78 @@ void ThemePlugin::apply_retro(Theme* theme) {
     style.FrameBorderSize = 1.0f;
     style.PopupBorderSize = 1.0f;
     style.TabBorderSize = 1.0f;
+    style.ChildBorderSize = 1.0f;
 
     style.FramePadding = ImVec2(4.0f, 3.0f);
-    style.ItemSpacing = ImVec2(4.0f, 4.0f);
+    style.ItemSpacing = ImVec2(6.0f, 4.0f);
+    style.WindowPadding = ImVec2(6.0f, 6.0f);
 
     ImVec4* colors = style.Colors;
-    colors[ImGuiCol_Button] = ImVec4(0.28f, 0.28f, 0.30f, 1.0f);
-    colors[ImGuiCol_ButtonHovered] = ImVec4(0.35f, 0.35f, 0.38f, 1.0f);
-    colors[ImGuiCol_ButtonActive] = ImVec4(0.22f, 0.22f, 0.24f, 1.0f);
-    colors[ImGuiCol_FrameBg] = ImVec4(0.18f, 0.18f, 0.20f, 1.0f);
-    colors[ImGuiCol_FrameBgHovered] = ImVec4(0.22f, 0.22f, 0.24f, 1.0f);
-    colors[ImGuiCol_FrameBgActive] = ImVec4(0.25f, 0.25f, 0.28f, 1.0f);
-    colors[ImGuiCol_Border] = ImVec4(0.45f, 0.45f, 0.48f, 0.8f);
+
+    ImVec4 bg_color = ImVec4(0.75f, 0.75f, 0.75f, 1.0f);
+    ImVec4 highlight = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+    ImVec4 shadow = ImVec4(0.4f, 0.4f, 0.4f, 1.0f);
+    ImVec4 dark_shadow = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
+    ImVec4 sunken_bg = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+    ImVec4 title_active = ImVec4(0.0f, 0.0f, 0.5f, 1.0f);
+    ImVec4 title_inactive = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
+    ImVec4 text_color = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
+    ImVec4 text_disabled = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
+    ImVec4 selection = ImVec4(0.0f, 0.0f, 0.5f, 1.0f);
+
+    colors[ImGuiCol_Text] = text_color;
+    colors[ImGuiCol_TextDisabled] = text_disabled;
+    colors[ImGuiCol_WindowBg] = bg_color;
+    colors[ImGuiCol_ChildBg] = bg_color;
+    colors[ImGuiCol_PopupBg] = bg_color;
+    colors[ImGuiCol_Border] = shadow;
+    colors[ImGuiCol_BorderShadow] = highlight;
+
+    colors[ImGuiCol_FrameBg] = sunken_bg;
+    colors[ImGuiCol_FrameBgHovered] = sunken_bg;
+    colors[ImGuiCol_FrameBgActive] = sunken_bg;
+
+    colors[ImGuiCol_TitleBg] = title_inactive;
+    colors[ImGuiCol_TitleBgActive] = title_active;
+    colors[ImGuiCol_TitleBgCollapsed] = title_inactive;
+
+    colors[ImGuiCol_MenuBarBg] = bg_color;
+    colors[ImGuiCol_ScrollbarBg] = ImVec4(0.65f, 0.65f, 0.65f, 1.0f);
+    colors[ImGuiCol_ScrollbarGrab] = bg_color;
+    colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.78f, 0.78f, 0.78f, 1.0f);
+    colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.70f, 0.70f, 0.70f, 1.0f);
+
+    colors[ImGuiCol_CheckMark] = text_color;
+    colors[ImGuiCol_SliderGrab] = bg_color;
+    colors[ImGuiCol_SliderGrabActive] = ImVec4(0.70f, 0.70f, 0.70f, 1.0f);
+
+    colors[ImGuiCol_Button] = bg_color;
+    colors[ImGuiCol_ButtonHovered] = ImVec4(0.80f, 0.80f, 0.80f, 1.0f);
+    colors[ImGuiCol_ButtonActive] = ImVec4(0.68f, 0.68f, 0.68f, 1.0f);
+
+    colors[ImGuiCol_Header] = selection;
+    colors[ImGuiCol_HeaderHovered] = ImVec4(0.0f, 0.0f, 0.6f, 1.0f);
+    colors[ImGuiCol_HeaderActive] = ImVec4(0.0f, 0.0f, 0.5f, 1.0f);
+
+    colors[ImGuiCol_Separator] = shadow;
+    colors[ImGuiCol_SeparatorHovered] = shadow;
+    colors[ImGuiCol_SeparatorActive] = dark_shadow;
+
+    colors[ImGuiCol_ResizeGrip] = bg_color;
+    colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.78f, 0.78f, 0.78f, 1.0f);
+    colors[ImGuiCol_ResizeGripActive] = ImVec4(0.70f, 0.70f, 0.70f, 1.0f);
+
+    colors[ImGuiCol_Tab] = bg_color;
+    colors[ImGuiCol_TabHovered] = ImVec4(0.80f, 0.80f, 0.80f, 1.0f);
+    colors[ImGuiCol_TabSelected] = ImVec4(0.80f, 0.80f, 0.80f, 1.0f);
+    colors[ImGuiCol_TabDimmed] = ImVec4(0.68f, 0.68f, 0.68f, 1.0f);
+    colors[ImGuiCol_TabDimmedSelected] = bg_color;
+
+    colors[ImGuiCol_DockingPreview] = ImVec4(0.0f, 0.0f, 0.5f, 0.7f);
+    colors[ImGuiCol_DockingEmptyBg] = bg_color;
+
+    colors[ImGuiCol_TextSelectedBg] = selection;
+    colors[ImGuiCol_NavHighlight] = selection;
 }
 
 void ThemePlugin::register_commands() {
