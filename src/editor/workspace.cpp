@@ -22,13 +22,18 @@ void Workspace::on_update(float delta_time) {
 }
 
 void Workspace::on_ui() {
+    ImGui::SetCursorPos(ImVec2(16.0f, 16.0f));
+    ImGui::BeginGroup();
+
     if (_plugin_manager && _plugin_manager->get_plugin_count() > 0) {
         _plugin_manager->workspace_ui_all();
     } else {
         ImGui::Text("Lunaris Code Editor");
-        ImGui::Separator();
+        ImGui::Spacing();
         ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Open a file to start editing");
     }
+
+    ImGui::EndGroup();
 }
 
 }
