@@ -1,23 +1,98 @@
 #include "lunaris/plugin/plugin_manager.h"
 #include <cstring>
+#include <cstdio>
+
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#include <libgen.h>
+#endif
 
 namespace lunaris {
 
+static void get_executable_directory(char* buffer, uint32_t size) {
+#ifdef __APPLE__
+    uint32_t buf_size = size;
+    if (_NSGetExecutablePath(buffer, &buf_size) == 0) {
+        char* dir = dirname(buffer);
+        strncpy(buffer, dir, size - 1);
+        buffer[size - 1] = '\0';
+    } else {
+        buffer[0] = '.';
+        buffer[1] = '\0';
+    }
+#elif defined(_WIN32)
+    GetModuleFileNameA(nullptr, buffer, size);
+    char* last_slash = strrchr(buffer, '\\');
+    if (last_slash) {
+        *last_slash = '\0';
+    }
+#else
+    ssize_t len = readlink("/proc/self/exe", buffer, size - 1);
+    if (len != -1) {
+        buffer[len] = '\0';
+        char* last_slash = strrchr(buffer, '/');
+        if (last_slash) {
+            *last_slash = '\0';
+        }
+    } else {
+        buffer[0] = '.';
+        buffer[1] = '\0';
+    }
+#endif
+}
+
 PluginManager::PluginManager()
-    : _plugin_count(0)
+    : _loaded_plugin_count(0)
+    , _plugin_count(0)
     , _next_id(1)
     , _context(nullptr) {
     for (uint32_t i = 0; i < MAX_PLUGINS; ++i) {
         _plugins[i] = nullptr;
     }
+    for (uint32_t i = 0; i < PluginLoader::MAX_LOADED_PLUGINS; ++i) {
+        _loaded_plugins[i].handle = nullptr;
+        _loaded_plugins[i].plugin = nullptr;
+        _loaded_plugins[i].destroy_func = nullptr;
+    }
 }
 
 PluginManager::~PluginManager() {
     unregister_all();
+    for (uint32_t i = 0; i < _loaded_plugin_count; ++i) {
+        _loader.unload_plugin(_loaded_plugins[i]);
+    }
+    _loaded_plugin_count = 0;
 }
 
 void PluginManager::set_context(EditorContext* context) {
     _context = context;
+}
+
+void PluginManager::load_plugins_from_directory(const char* directory) {
+    char exe_dir[512];
+    get_executable_directory(exe_dir, sizeof(exe_dir));
+    
+    char full_path[1024];
+    snprintf(full_path, sizeof(full_path), "%s/%s", exe_dir, directory);
+    
+    LoadedPlugin temp_plugins[PluginLoader::MAX_LOADED_PLUGINS];
+    uint32_t loaded = _loader.load_plugins_from_directory(full_path, temp_plugins, PluginLoader::MAX_LOADED_PLUGINS);
+
+    for (uint32_t i = 0; i < loaded; ++i) {
+        if (_loaded_plugin_count >= PluginLoader::MAX_LOADED_PLUGINS) {
+            _loader.unload_plugin(temp_plugins[i]);
+            continue;
+        }
+
+        PluginID id = register_plugin(temp_plugins[i].plugin);
+        if (id != INVALID_PLUGIN_ID) {
+            _loaded_plugins[_loaded_plugin_count] = temp_plugins[i];
+            _loaded_plugin_count++;
+            enable_plugin(id);
+        } else {
+            _loader.unload_plugin(temp_plugins[i]);
+        }
+    }
 }
 
 PluginID PluginManager::generate_id() {

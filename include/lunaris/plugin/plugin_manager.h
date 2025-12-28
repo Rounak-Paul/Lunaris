@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lunaris/plugin/plugin.h"
+#include "lunaris/plugin/plugin_loader.h"
 #include "lunaris/plugin/editor_context.h"
 
 namespace lunaris {
@@ -17,6 +18,8 @@ public:
     PluginID register_plugin(Plugin* plugin);
     void unregister_plugin(PluginID id);
     void unregister_all();
+
+    void load_plugins_from_directory(const char* directory);
 
     void enable_plugin(PluginID id);
     void disable_plugin(PluginID id);
@@ -40,9 +43,12 @@ private:
     PluginID generate_id();
 
     Plugin* _plugins[MAX_PLUGINS];
+    LoadedPlugin _loaded_plugins[PluginLoader::MAX_LOADED_PLUGINS];
+    uint32_t _loaded_plugin_count;
     uint32_t _plugin_count;
     PluginID _next_id;
     EditorContext* _context;
+    PluginLoader _loader;
 };
 
 }

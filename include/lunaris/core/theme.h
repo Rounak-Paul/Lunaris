@@ -34,6 +34,19 @@ public:
     void set_primary_color_hex(uint32_t hex);
     void set_style(ThemeStyle style);
 
+    void set_background(const Color& color) { _background = color; }
+    void set_background_alt(const Color& color) { _background_alt = color; }
+    void set_surface(const Color& color) { _surface = color; }
+    void set_text(const Color& color) { _text = color; }
+    void set_text_dim(const Color& color) { _text_dim = color; }
+    void set_border(const Color& color) { _border = color; }
+    void set_accent(const Color& color) { _accent = color; }
+    void set_accent_hover(const Color& color) { _accent_hover = color; }
+    void set_accent_active(const Color& color) { _accent_active = color; }
+    void set_success(const Color& color) { _success = color; }
+    void set_warning(const Color& color) { _warning = color; }
+    void set_error(const Color& color) { _error = color; }
+
     void apply();
 
     Color get_primary() const { return _primary; }

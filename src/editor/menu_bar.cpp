@@ -149,6 +149,27 @@ void MenuBar::draw_view_menu() {
         ImGui::Separator();
 
         if (ImGui::BeginMenu("Appearance")) {
+            if (ImGui::BeginMenu("Theme")) {
+                if (ImGui::MenuItem("Default")) {
+                    if (_command_registry) {
+                        _command_registry->execute_command_by_name("Theme: Default");
+                    }
+                }
+                if (ImGui::MenuItem("Minimalist")) {
+                    if (_command_registry) {
+                        _command_registry->execute_command_by_name("Theme: Minimalist");
+                    }
+                }
+                if (ImGui::MenuItem("Retro")) {
+                    if (_command_registry) {
+                        _command_registry->execute_command_by_name("Theme: Retro");
+                    }
+                }
+                ImGui::EndMenu();
+            }
+
+            ImGui::Separator();
+
             if (ImGui::MenuItem("Zoom In", "Ctrl+Shift+=")) {
                 Settings::get()->zoom_in();
             }

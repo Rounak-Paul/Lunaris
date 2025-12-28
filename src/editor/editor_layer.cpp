@@ -63,6 +63,7 @@ void EditorLayer::on_init() {
     _context->set_plugin_manager(_plugin_manager);
     _context->set_job_system(_job_system);
     _context->set_theme(_theme);
+    _context->set_command_registry(_command_registry);
 
     _plugin_manager->set_context(_context);
     _menu_bar->set_theme(_theme);
@@ -78,6 +79,8 @@ void EditorLayer::on_init() {
     _command_palette->set_theme(_theme);
 
     register_builtin_commands();
+
+    _plugin_manager->load_plugins_from_directory("plugins");
 
     _menu_bar->on_init();
     _sidebar->on_init();
