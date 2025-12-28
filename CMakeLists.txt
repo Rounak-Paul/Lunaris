@@ -23,11 +23,17 @@ set(LUNARIS_SOURCES
     src/core/application.cpp
     src/core/job_system.cpp
     src/core/theme.cpp
+    src/core/command.cpp
+    src/core/command_registry.cpp
     src/ui/components.cpp
     src/editor/editor_layer.cpp
     src/editor/workspace.cpp
     src/editor/status_bar.cpp
-    src/editor/activity_bar.cpp
+    src/editor/menu_bar.cpp
+    src/editor/sidebar.cpp
+    src/editor/tab_bar.cpp
+    src/editor/bottom_panel.cpp
+    src/editor/command_palette.cpp
     src/plugin/plugin_manager.cpp
 )
 
