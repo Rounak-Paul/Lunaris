@@ -6,6 +6,9 @@
 #include "lunaris/editor/tab_bar.h"
 #include "lunaris/editor/bottom_panel.h"
 #include "lunaris/editor/command_palette.h"
+#include "lunaris/editor/document_manager.h"
+#include "lunaris/editor/document.h"
+#include "lunaris/editor/text_editor.h"
 #include "lunaris/plugin/plugin_manager.h"
 #include "lunaris/plugin/editor_context.h"
 #include "lunaris/core/job_system.h"
@@ -33,6 +36,8 @@ EditorLayer::EditorLayer()
     , _context(nullptr)
     , _job_system(nullptr)
     , _theme(nullptr)
+    , _document_manager(nullptr)
+    , _text_editor(nullptr)
     , _first_frame(true) {
     s_instance = this;
 }
@@ -54,6 +59,8 @@ void EditorLayer::on_init() {
     _workspace = new Workspace();
     _status_bar = new StatusBar();
     _theme = new Theme();
+    _document_manager = new DocumentManager();
+    _text_editor = new TextEditor();
 
     _job_system->init();
     _theme->apply();
@@ -71,12 +78,33 @@ void EditorLayer::on_init() {
     _menu_bar->set_command_registry(_command_registry);
     _sidebar->set_theme(_theme);
     _sidebar->set_plugin_manager(_plugin_manager);
+    _sidebar->set_file_selected_callback([](const char* path, void* user_data) {
+        EditorLayer* editor = static_cast<EditorLayer*>(user_data);
+        if (editor) {
+            editor->open_file(path);
+        }
+    }, this);
     _tab_bar->set_theme(_theme);
+    _tab_bar->set_on_tab_selected([](TabID id, void* user_data) {
+        EditorLayer* editor = static_cast<EditorLayer*>(user_data);
+        if (editor && editor->_document_manager) {
+            editor->_document_manager->on_tab_selected(id);
+        }
+    }, this);
+    _tab_bar->set_on_tab_closed([](TabID id, void* user_data) {
+        EditorLayer* editor = static_cast<EditorLayer*>(user_data);
+        if (editor && editor->_document_manager) {
+            editor->_document_manager->on_tab_closed(id);
+        }
+    }, this);
     _bottom_panel->set_theme(_theme);
     _workspace->set_plugin_manager(_plugin_manager);
     _status_bar->set_plugin_manager(_plugin_manager);
     _command_palette->set_command_registry(_command_registry);
     _command_palette->set_theme(_theme);
+    _document_manager->set_tab_bar(_tab_bar);
+    _document_manager->set_theme(_theme);
+    _text_editor->set_theme(_theme);
 
     register_builtin_commands();
 
@@ -92,6 +120,16 @@ void EditorLayer::on_init() {
 
 void EditorLayer::on_shutdown() {
     ui::shutdown();
+
+    if (_text_editor) {
+        delete _text_editor;
+        _text_editor = nullptr;
+    }
+
+    if (_document_manager) {
+        delete _document_manager;
+        _document_manager = nullptr;
+    }
 
     if (_command_palette) {
         delete _command_palette;
@@ -203,6 +241,28 @@ void EditorLayer::handle_keyboard_shortcuts() {
         }
     }
 
+    if (ctrl && ImGui::IsKeyPressed(ImGuiKey_N, false)) {
+        new_file();
+    }
+
+    if (ctrl && !shift && ImGui::IsKeyPressed(ImGuiKey_O, false)) {
+        if (_document_manager) {
+            _document_manager->open_file_dialog();
+        }
+    }
+
+    if (ctrl && !shift && ImGui::IsKeyPressed(ImGuiKey_S, false)) {
+        save_file();
+    }
+
+    if (ctrl && shift && ImGui::IsKeyPressed(ImGuiKey_S, false)) {
+        save_file_as();
+    }
+
+    if (ctrl && ImGui::IsKeyPressed(ImGuiKey_W, false)) {
+        close_file();
+    }
+
     if (ctrl && ImGui::IsKeyPressed(ImGuiKey_B, false)) {
         if (_sidebar) {
             _sidebar->toggle();
@@ -273,14 +333,22 @@ void EditorLayer::register_builtin_commands() {
     cmd_new.description = "Create a new file";
     cmd_new.shortcut = "Ctrl+N";
     cmd_new.category = CommandCategory::File;
-    _command_registry->register_command(cmd_new, [](void*) {}, nullptr);
+    _command_registry->register_command(cmd_new, [](void*) {
+        if (s_instance) {
+            s_instance->new_file();
+        }
+    }, nullptr);
 
     CommandInfo cmd_open;
     cmd_open.name = "Open File";
     cmd_open.description = "Open an existing file";
     cmd_open.shortcut = "Ctrl+O";
     cmd_open.category = CommandCategory::File;
-    _command_registry->register_command(cmd_open, [](void*) {}, nullptr);
+    _command_registry->register_command(cmd_open, [](void*) {
+        if (s_instance && s_instance->_document_manager) {
+            s_instance->_document_manager->open_file_dialog();
+        }
+    }, nullptr);
 
     CommandInfo cmd_open_folder;
     cmd_open_folder.name = "Open Folder";
@@ -298,21 +366,33 @@ void EditorLayer::register_builtin_commands() {
     cmd_save.description = "Save the current file";
     cmd_save.shortcut = "Ctrl+S";
     cmd_save.category = CommandCategory::File;
-    _command_registry->register_command(cmd_save, [](void*) {}, nullptr);
+    _command_registry->register_command(cmd_save, [](void*) {
+        if (s_instance) {
+            s_instance->save_file();
+        }
+    }, nullptr);
 
     CommandInfo cmd_save_as;
     cmd_save_as.name = "Save As";
     cmd_save_as.description = "Save the current file with a new name";
     cmd_save_as.shortcut = "Ctrl+Shift+S";
     cmd_save_as.category = CommandCategory::File;
-    _command_registry->register_command(cmd_save_as, [](void*) {}, nullptr);
+    _command_registry->register_command(cmd_save_as, [](void*) {
+        if (s_instance) {
+            s_instance->save_file_as();
+        }
+    }, nullptr);
 
     CommandInfo cmd_close;
     cmd_close.name = "Close File";
     cmd_close.description = "Close the current file";
     cmd_close.shortcut = "Ctrl+W";
     cmd_close.category = CommandCategory::File;
-    _command_registry->register_command(cmd_close, [](void*) {}, nullptr);
+    _command_registry->register_command(cmd_close, [](void*) {
+        if (s_instance) {
+            s_instance->close_file();
+        }
+    }, nullptr);
 
     CommandInfo cmd_quit;
     cmd_quit.name = "Quit";
@@ -403,10 +483,18 @@ void EditorLayer::setup_layout() {
             }
 
             float workspace_h = ImGui::GetContentRegionAvail().y - panel_height;
-            ImGui::BeginChild("##Workspace", ImVec2(0.0f, workspace_h), false);
-            if (_workspace) {
+            ImGui::BeginChild("##Workspace", ImVec2(0.0f, workspace_h), false, ImGuiWindowFlags_NoScrollbar);
+            
+            if (_document_manager && _document_manager->get_document_count() > 0) {
+                Document* active_doc = _document_manager->get_active_document();
+                if (active_doc && _text_editor) {
+                    _text_editor->set_document(active_doc);
+                    _text_editor->on_ui();
+                }
+            } else if (_workspace) {
                 _workspace->on_ui();
             }
+            
             ImGui::EndChild();
 
             if (_bottom_panel && _bottom_panel->is_visible()) {
@@ -433,6 +521,47 @@ void EditorLayer::setup_layout() {
     ImGui::PopStyleColor();
 
     ImGui::PopStyleVar(4);
+}
+
+void EditorLayer::open_file(const char* filepath) {
+    if (_document_manager) {
+        _document_manager->open_document(filepath);
+    }
+}
+
+void EditorLayer::new_file() {
+    if (_document_manager) {
+        _document_manager->new_document();
+    }
+}
+
+void EditorLayer::save_file() {
+    if (!_document_manager) {
+        return;
+    }
+    
+    Document* doc = _document_manager->get_active_document();
+    if (!doc) {
+        return;
+    }
+    
+    if (doc->has_file()) {
+        _document_manager->save_active_document();
+    } else {
+        save_file_as();
+    }
+}
+
+void EditorLayer::save_file_as() {
+    if (_document_manager) {
+        _document_manager->save_file_dialog();
+    }
+}
+
+void EditorLayer::close_file() {
+    if (_document_manager) {
+        _document_manager->close_active_document();
+    }
 }
 
 }

@@ -51,6 +51,10 @@ set(LUNARIS_SOURCES
     src/editor/bottom_panel.cpp
     src/editor/command_palette.cpp
     src/editor/file_tree.cpp
+    src/editor/text_buffer.cpp
+    src/editor/document.cpp
+    src/editor/document_manager.cpp
+    src/editor/text_editor.cpp
 )
 
 add_executable(lunaris ${LUNARIS_SOURCES})

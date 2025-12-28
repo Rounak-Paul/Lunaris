@@ -23,6 +23,8 @@ public:
     static constexpr float TAB_MIN_WIDTH = 80.0f;
     static constexpr float TAB_MAX_WIDTH = 200.0f;
 
+    using TabCallback = void(*)(TabID id, void* user_data);
+
     TabBar();
     ~TabBar();
 
@@ -45,6 +47,16 @@ public:
 
     float get_height() const { return _tab_count > 0 ? TAB_HEIGHT : 0.0f; }
 
+    void set_on_tab_selected(TabCallback cb, void* user_data) {
+        _on_tab_selected = cb;
+        _tab_selected_user_data = user_data;
+    }
+
+    void set_on_tab_closed(TabCallback cb, void* user_data) {
+        _on_tab_closed = cb;
+        _tab_closed_user_data = user_data;
+    }
+
 private:
     struct Tab {
         TabID id;
@@ -59,6 +71,10 @@ private:
     TabID _active_tab;
     TabID _next_id;
     Theme* _theme;
+    TabCallback _on_tab_selected;
+    void* _tab_selected_user_data;
+    TabCallback _on_tab_closed;
+    void* _tab_closed_user_data;
 };
 
 }

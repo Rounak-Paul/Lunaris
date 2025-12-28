@@ -14,6 +14,8 @@ class Sidebar;
 class TabBar;
 class BottomPanel;
 class Theme;
+class DocumentManager;
+class TextEditor;
 
 class EditorLayer {
 public:
@@ -34,6 +36,14 @@ public:
     Sidebar* get_sidebar() const { return _sidebar; }
     BottomPanel* get_bottom_panel() const { return _bottom_panel; }
     Theme* get_theme() const { return _theme; }
+    DocumentManager* get_document_manager() const { return _document_manager; }
+    TextEditor* get_text_editor() const { return _text_editor; }
+
+    void open_file(const char* filepath);
+    void new_file();
+    void save_file();
+    void save_file_as();
+    void close_file();
 
 private:
     void setup_layout();
@@ -53,6 +63,8 @@ private:
     EditorContext* _context;
     JobSystem* _job_system;
     Theme* _theme;
+    DocumentManager* _document_manager;
+    TextEditor* _text_editor;
     bool _first_frame;
 };
 

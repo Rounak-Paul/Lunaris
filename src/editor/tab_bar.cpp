@@ -11,7 +11,11 @@ TabBar::TabBar()
     : _tab_count(0)
     , _active_tab(INVALID_TAB_ID)
     , _next_id(1)
-    , _theme(nullptr) {
+    , _theme(nullptr)
+    , _on_tab_selected(nullptr)
+    , _tab_selected_user_data(nullptr)
+    , _on_tab_closed(nullptr)
+    , _tab_closed_user_data(nullptr) {
     for (uint32_t i = 0; i < MAX_TABS; ++i) {
         _tabs[i].id = INVALID_TAB_ID;
         _tabs[i].info.title = nullptr;
@@ -138,7 +142,7 @@ void TabBar::draw_tab(uint32_t index) {
 
     const char* title = tab.info.title ? tab.info.title : "Untitled";
     float text_w = ImGui::CalcTextSize(title).x;
-    float tab_w = text_w + 40.0f;
+    float tab_w = text_w + 50.0f;
     if (tab_w < TAB_MIN_WIDTH) tab_w = TAB_MIN_WIDTH;
     if (tab_w > TAB_MAX_WIDTH) tab_w = TAB_MAX_WIDTH;
 
@@ -151,18 +155,44 @@ void TabBar::draw_tab(uint32_t index) {
 
     ImVec2 pos = ImGui::GetCursorScreenPos();
     if (ImGui::Button("##tab", ImVec2(tab_w, TAB_HEIGHT))) {
-        _active_tab = tab.id;
+        if (_active_tab != tab.id) {
+            _active_tab = tab.id;
+            if (_on_tab_selected) {
+                _on_tab_selected(tab.id, _tab_selected_user_data);
+            }
+        }
     }
 
     float text_y = pos.y + (TAB_HEIGHT - ImGui::GetTextLineHeight()) * 0.5f;
     ImGui::GetWindowDrawList()->AddText(ImVec2(pos.x + 12.0f, text_y), ImGui::ColorConvertFloat4ToU32(txt_col), title);
 
-    if (tab.info.modified) {
+    float close_x = pos.x + tab_w - 22.0f;
+    float close_y = pos.y + (TAB_HEIGHT - 14.0f) * 0.5f;
+    ImVec2 close_min(close_x, close_y);
+    ImVec2 close_max(close_x + 14.0f, close_y + 14.0f);
+
+    bool close_hovered = ImGui::IsMouseHoveringRect(close_min, close_max);
+
+    if (tab.info.modified && !close_hovered) {
         ImGui::GetWindowDrawList()->AddCircleFilled(
-            ImVec2(pos.x + tab_w - 16.0f, pos.y + TAB_HEIGHT * 0.5f),
+            ImVec2(close_x + 7.0f, close_y + 7.0f),
             3.0f,
             ImGui::ColorConvertFloat4ToU32(ImVec4(text_dim.r, text_dim.g, text_dim.b, 1.0f))
         );
+    } else {
+        ImU32 close_col = close_hovered
+            ? ImGui::ColorConvertFloat4ToU32(ImVec4(text.r, text.g, text.b, 1.0f))
+            : ImGui::ColorConvertFloat4ToU32(ImVec4(text_dim.r, text_dim.g, text_dim.b, 0.6f));
+
+        if (is_active || close_hovered) {
+            ImGui::GetWindowDrawList()->AddText(ImVec2(close_x + 2.0f, close_y), close_col, ICON_FA_XMARK);
+        }
+    }
+
+    if (close_hovered && ImGui::IsMouseClicked(0)) {
+        if (_on_tab_closed) {
+            _on_tab_closed(tab.id, _tab_closed_user_data);
+        }
     }
 
     if (is_active) {
