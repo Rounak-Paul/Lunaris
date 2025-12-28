@@ -11,6 +11,7 @@
 #include "lunaris/core/job_system.h"
 #include "lunaris/core/theme.h"
 #include "lunaris/core/command_registry.h"
+#include "lunaris/core/settings.h"
 #include "lunaris/ui/components.h"
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -191,6 +192,7 @@ void EditorLayer::on_ui() {
 void EditorLayer::handle_keyboard_shortcuts() {
     ImGuiIO& io = ImGui::GetIO();
     bool ctrl = io.KeyCtrl || io.KeySuper;
+    bool shift = io.KeyShift;
 
     if (ctrl && ImGui::IsKeyPressed(ImGuiKey_P, false)) {
         if (_command_palette && !_command_palette->is_open()) {
@@ -204,10 +206,28 @@ void EditorLayer::handle_keyboard_shortcuts() {
         }
     }
 
+    if (ctrl && shift && ImGui::IsKeyPressed(ImGuiKey_O, false)) {
+        if (_sidebar) {
+            _sidebar->open_folder();
+        }
+    }
+
     if (ctrl && ImGui::IsKeyPressed(ImGuiKey_GraveAccent, false)) {
         if (_bottom_panel) {
             _bottom_panel->toggle();
         }
+    }
+
+    if (ctrl && shift && ImGui::IsKeyPressed(ImGuiKey_Equal, false)) {
+        Settings::get()->zoom_in();
+    }
+
+    if (ctrl && ImGui::IsKeyPressed(ImGuiKey_Minus, false)) {
+        Settings::get()->zoom_out();
+    }
+
+    if (ctrl && ImGui::IsKeyPressed(ImGuiKey_0, false)) {
+        Settings::get()->reset_zoom();
     }
 }
 
@@ -259,6 +279,17 @@ void EditorLayer::register_builtin_commands() {
     cmd_open.category = CommandCategory::File;
     _command_registry->register_command(cmd_open, [](void*) {}, nullptr);
 
+    CommandInfo cmd_open_folder;
+    cmd_open_folder.name = "Open Folder";
+    cmd_open_folder.description = "Open a folder in the explorer";
+    cmd_open_folder.shortcut = "Ctrl+Shift+O";
+    cmd_open_folder.category = CommandCategory::File;
+    _command_registry->register_command(cmd_open_folder, [](void*) {
+        if (s_instance && s_instance->_sidebar) {
+            s_instance->_sidebar->open_folder();
+        }
+    }, nullptr);
+
     CommandInfo cmd_save;
     cmd_save.name = "Save";
     cmd_save.description = "Save the current file";
@@ -300,6 +331,33 @@ void EditorLayer::register_builtin_commands() {
     cmd_goto_line.shortcut = "Ctrl+G";
     cmd_goto_line.category = CommandCategory::Navigation;
     _command_registry->register_command(cmd_goto_line, [](void*) {}, nullptr);
+
+    CommandInfo cmd_zoom_in;
+    cmd_zoom_in.name = "Zoom In";
+    cmd_zoom_in.description = "Increase the UI scale";
+    cmd_zoom_in.shortcut = "Ctrl+Shift+=";
+    cmd_zoom_in.category = CommandCategory::View;
+    _command_registry->register_command(cmd_zoom_in, [](void*) {
+        Settings::get()->zoom_in();
+    }, nullptr);
+
+    CommandInfo cmd_zoom_out;
+    cmd_zoom_out.name = "Zoom Out";
+    cmd_zoom_out.description = "Decrease the UI scale";
+    cmd_zoom_out.shortcut = "Ctrl+-";
+    cmd_zoom_out.category = CommandCategory::View;
+    _command_registry->register_command(cmd_zoom_out, [](void*) {
+        Settings::get()->zoom_out();
+    }, nullptr);
+
+    CommandInfo cmd_reset_zoom;
+    cmd_reset_zoom.name = "Reset Zoom";
+    cmd_reset_zoom.description = "Reset the UI scale to default";
+    cmd_reset_zoom.shortcut = "Ctrl+0";
+    cmd_reset_zoom.category = CommandCategory::View;
+    _command_registry->register_command(cmd_reset_zoom, [](void*) {
+        Settings::get()->reset_zoom();
+    }, nullptr);
 }
 
 void EditorLayer::setup_layout() {

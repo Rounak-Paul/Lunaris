@@ -1,6 +1,7 @@
 #include "lunaris/editor/menu_bar.h"
 #include "lunaris/core/theme.h"
 #include "lunaris/core/command_registry.h"
+#include "lunaris/core/settings.h"
 #include "lunaris/plugin/plugin_manager.h"
 #include <imgui.h>
 
@@ -47,7 +48,10 @@ void MenuBar::draw_file_menu() {
                 _command_registry->execute_command_by_name("Open File");
             }
         }
-        if (ImGui::MenuItem("Open Folder...")) {
+        if (ImGui::MenuItem("Open Folder...", "Ctrl+Shift+O")) {
+            if (_command_registry) {
+                _command_registry->execute_command_by_name("Open Folder");
+            }
         }
 
         ImGui::Separator();
@@ -145,11 +149,14 @@ void MenuBar::draw_view_menu() {
         ImGui::Separator();
 
         if (ImGui::BeginMenu("Appearance")) {
-            if (ImGui::MenuItem("Zoom In", "Ctrl++")) {
+            if (ImGui::MenuItem("Zoom In", "Ctrl+Shift+=")) {
+                Settings::get()->zoom_in();
             }
             if (ImGui::MenuItem("Zoom Out", "Ctrl+-")) {
+                Settings::get()->zoom_out();
             }
             if (ImGui::MenuItem("Reset Zoom", "Ctrl+0")) {
+                Settings::get()->reset_zoom();
             }
             ImGui::EndMenu();
         }

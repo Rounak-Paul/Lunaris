@@ -25,6 +25,7 @@ set(LUNARIS_SOURCES
     src/core/theme.cpp
     src/core/command.cpp
     src/core/command_registry.cpp
+    src/core/settings.cpp
     src/ui/components.cpp
     src/editor/editor_layer.cpp
     src/editor/workspace.cpp
@@ -34,6 +35,7 @@ set(LUNARIS_SOURCES
     src/editor/tab_bar.cpp
     src/editor/bottom_panel.cpp
     src/editor/command_palette.cpp
+    src/editor/file_tree.cpp
     src/plugin/plugin_manager.cpp
 )
 
