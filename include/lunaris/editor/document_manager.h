@@ -50,7 +50,7 @@ private:
     DocumentID generate_id();
     void sync_tab_modified(DocumentID id);
 
-    Document _documents[MAX_DOCUMENTS];
+    Document* _documents[MAX_DOCUMENTS];
     uint32_t _document_count;
     DocumentID _active_id;
     DocumentID _next_id;

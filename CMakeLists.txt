@@ -55,6 +55,8 @@ set(LUNARIS_SOURCES
     src/editor/document.cpp
     src/editor/document_manager.cpp
     src/editor/text_editor.cpp
+    src/editor/undo_manager.cpp
+    src/editor/file_operations.cpp
 )
 
 add_executable(lunaris ${LUNARIS_SOURCES})

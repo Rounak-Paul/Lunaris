@@ -7,6 +7,7 @@ namespace lunaris {
 class Theme;
 class PluginManager;
 class FileTree;
+class FileOperations;
 
 enum class SidebarPanel : uint8_t {
     Explorer,
@@ -28,6 +29,7 @@ public:
 
     void set_theme(Theme* theme);
     void set_plugin_manager(PluginManager* manager) { _plugin_manager = manager; }
+    void set_file_operations(FileOperations* ops);
 
     void on_init();
     void on_shutdown();
@@ -50,6 +52,8 @@ public:
     void close_folder();
     bool has_folder() const;
     const char* get_folder_path() const;
+
+    void refresh_file_tree();
 
     using FileSelectedCallback = void(*)(const char* path, void* user_data);
     void set_file_selected_callback(FileSelectedCallback cb, void* user_data);

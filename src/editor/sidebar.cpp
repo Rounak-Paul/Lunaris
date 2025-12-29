@@ -1,5 +1,6 @@
 #include "lunaris/editor/sidebar.h"
 #include "lunaris/editor/file_tree.h"
+#include "lunaris/editor/file_operations.h"
 #include "lunaris/core/theme.h"
 #include "lunaris/ui/components.h"
 #include <imgui.h>
@@ -32,6 +33,18 @@ void Sidebar::set_theme(Theme* theme) {
     _theme = theme;
     if (_file_tree) {
         _file_tree->set_theme(theme);
+    }
+}
+
+void Sidebar::set_file_operations(FileOperations* ops) {
+    if (_file_tree) {
+        _file_tree->set_file_operations(ops);
+    }
+}
+
+void Sidebar::refresh_file_tree() {
+    if (_file_tree) {
+        _file_tree->refresh();
     }
 }
 
@@ -160,9 +173,13 @@ void Sidebar::draw_explorer() {
     Color accent = _theme ? _theme->get_accent() : Color(0.3f, 0.5f, 0.8f);
 
     if (_file_tree && _file_tree->has_folder()) {
+        ImGui::BeginGroup();
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(text_dim.r, text_dim.g, text_dim.b, 1.0f));
         ImGui::TextUnformatted(_file_tree->get_root_name());
         ImGui::PopStyleColor();
+        ImGui::SameLine(ImGui::GetContentRegionAvail().x - 80.0f);
+        _file_tree->draw_toolbar();
+        ImGui::EndGroup();
 
         ImGui::Spacing();
 

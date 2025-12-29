@@ -9,6 +9,7 @@
 #include "lunaris/editor/document_manager.h"
 #include "lunaris/editor/document.h"
 #include "lunaris/editor/text_editor.h"
+#include "lunaris/editor/file_operations.h"
 #include "lunaris/plugin/plugin_manager.h"
 #include "lunaris/plugin/editor_context.h"
 #include "lunaris/core/job_system.h"
@@ -38,6 +39,7 @@ EditorLayer::EditorLayer()
     , _theme(nullptr)
     , _document_manager(nullptr)
     , _text_editor(nullptr)
+    , _file_operations(nullptr)
     , _first_frame(true) {
     s_instance = this;
 }
@@ -61,6 +63,7 @@ void EditorLayer::on_init() {
     _theme = new Theme();
     _document_manager = new DocumentManager();
     _text_editor = new TextEditor();
+    _file_operations = new FileOperations();
 
     _job_system->init();
     _theme->apply();
@@ -78,6 +81,7 @@ void EditorLayer::on_init() {
     _menu_bar->set_command_registry(_command_registry);
     _sidebar->set_theme(_theme);
     _sidebar->set_plugin_manager(_plugin_manager);
+    _sidebar->set_file_operations(_file_operations);
     _sidebar->set_file_selected_callback([](const char* path, void* user_data) {
         EditorLayer* editor = static_cast<EditorLayer*>(user_data);
         if (editor) {
@@ -105,6 +109,10 @@ void EditorLayer::on_init() {
     _document_manager->set_tab_bar(_tab_bar);
     _document_manager->set_theme(_theme);
     _text_editor->set_theme(_theme);
+    _text_editor->set_document_manager(_document_manager);
+    _text_editor->set_file_operations(_file_operations);
+    _file_operations->set_document_manager(_document_manager);
+    _file_operations->set_sidebar(_sidebar);
 
     register_builtin_commands();
 
@@ -120,6 +128,11 @@ void EditorLayer::on_init() {
 
 void EditorLayer::on_shutdown() {
     ui::shutdown();
+
+    if (_file_operations) {
+        delete _file_operations;
+        _file_operations = nullptr;
+    }
 
     if (_text_editor) {
         delete _text_editor;

@@ -5,10 +5,25 @@
 
 namespace lunaris {
 
+enum class EditType : uint8_t {
+    Insert,
+    Remove
+};
+
+struct EditOperation {
+    EditType type;
+    size_t pos;
+    char* text;
+    size_t len;
+    size_t cursor_before;
+    size_t cursor_after;
+};
+
 class TextBuffer {
 public:
     static constexpr size_t INITIAL_CAPACITY = 4096;
     static constexpr size_t MAX_LINE_COUNT = 1000000;
+    static constexpr size_t MAX_UNDO_HISTORY = 1000;
 
     TextBuffer();
     ~TextBuffer();
@@ -22,9 +37,17 @@ public:
     size_t get_length() const { return _length; }
     uint32_t get_line_count() const { return _line_count; }
 
-    void insert(size_t pos, const char* text, size_t len);
-    void remove(size_t pos, size_t len);
+    void insert(size_t pos, const char* text, size_t len, size_t cursor_pos);
+    void remove(size_t pos, size_t len, size_t cursor_pos);
+    void insert_no_history(size_t pos, const char* text, size_t len);
+    void remove_no_history(size_t pos, size_t len);
     char char_at(size_t pos) const;
+
+    bool can_undo() const { return _undo_count > 0; }
+    bool can_redo() const { return _redo_count > 0; }
+    size_t undo();
+    size_t redo();
+    void clear_history();
 
     size_t get_line_start(uint32_t line) const;
     size_t get_line_end(uint32_t line) const;
@@ -40,6 +63,12 @@ public:
 private:
     void ensure_capacity(size_t required);
     void rebuild_line_starts();
+    void insert_raw(size_t pos, const char* text, size_t len);
+    void remove_raw(size_t pos, size_t len);
+    void push_undo(EditOperation op);
+    void push_redo(EditOperation op);
+    void free_operation(EditOperation& op);
+    void clear_redo();
 
     char* _data;
     size_t _length;
@@ -49,6 +78,11 @@ private:
     size_t _line_starts_capacity;
     bool _modified;
     uint32_t _version;
+
+    EditOperation* _undo_stack;
+    size_t _undo_count;
+    EditOperation* _redo_stack;
+    size_t _redo_count;
 };
 
 }

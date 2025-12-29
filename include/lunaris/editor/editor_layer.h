@@ -16,6 +16,7 @@ class BottomPanel;
 class Theme;
 class DocumentManager;
 class TextEditor;
+class FileOperations;
 
 class EditorLayer {
 public:
@@ -38,6 +39,7 @@ public:
     Theme* get_theme() const { return _theme; }
     DocumentManager* get_document_manager() const { return _document_manager; }
     TextEditor* get_text_editor() const { return _text_editor; }
+    FileOperations* get_file_operations() const { return _file_operations; }
 
     void open_file(const char* filepath);
     void new_file();
@@ -65,6 +67,7 @@ private:
     Theme* _theme;
     DocumentManager* _document_manager;
     TextEditor* _text_editor;
+    FileOperations* _file_operations;
     bool _first_frame;
 };
 

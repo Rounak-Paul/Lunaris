@@ -1,5 +1,6 @@
 #include "lunaris/editor/document_manager.h"
 #include "lunaris/editor/tab_bar.h"
+#include "lunaris/editor/undo_manager.h"
 #include <tinyvk/core/file_dialog.h>
 #include <cstring>
 
@@ -11,9 +12,16 @@ DocumentManager::DocumentManager()
     , _next_id(1)
     , _tab_bar(nullptr)
     , _theme(nullptr) {
+    for (uint32_t i = 0; i < MAX_DOCUMENTS; ++i) {
+        _documents[i] = nullptr;
+    }
 }
 
 DocumentManager::~DocumentManager() {
+    for (uint32_t i = 0; i < _document_count; ++i) {
+        delete _documents[i];
+        _documents[i] = nullptr;
+    }
 }
 
 DocumentID DocumentManager::generate_id() {
@@ -25,7 +33,7 @@ DocumentID DocumentManager::new_document() {
         return INVALID_DOCUMENT_ID;
     }
 
-    Document* doc = &_documents[_document_count];
+    Document* doc = new Document();
     doc->create_new();
     DocumentID id = generate_id();
     doc->set_id(id);
@@ -41,6 +49,7 @@ DocumentID DocumentManager::new_document() {
         _tab_bar->set_active_tab(tab_id);
     }
 
+    _documents[_document_count] = doc;
     ++_document_count;
     _active_id = id;
     return id;
@@ -60,8 +69,9 @@ DocumentID DocumentManager::open_document(const char* filepath) {
         return INVALID_DOCUMENT_ID;
     }
 
-    Document* doc = &_documents[_document_count];
+    Document* doc = new Document();
     if (!doc->open(filepath)) {
+        delete doc;
         return INVALID_DOCUMENT_ID;
     }
 
@@ -79,6 +89,7 @@ DocumentID DocumentManager::open_document(const char* filepath) {
         _tab_bar->set_active_tab(tab_id);
     }
 
+    _documents[_document_count] = doc;
     ++_document_count;
     _active_id = id;
     return id;
@@ -126,7 +137,7 @@ bool DocumentManager::save_active_document_as(const char* filepath) {
 void DocumentManager::close_document(DocumentID id) {
     int32_t index = -1;
     for (uint32_t i = 0; i < _document_count; ++i) {
-        if (_documents[i].get_id() == id) {
+        if (_documents[i]->get_id() == id) {
             index = static_cast<int32_t>(i);
             break;
         }
@@ -136,27 +147,29 @@ void DocumentManager::close_document(DocumentID id) {
         return;
     }
 
-    Document* doc = &_documents[index];
+    UndoManager::instance().clear_for_document(id);
+
+    Document* doc = _documents[index];
     TabID closing_tab = doc->get_tab_id();
 
     if (_tab_bar) {
         _tab_bar->remove_tab(closing_tab);
     }
 
-    doc->close();
+    delete doc;
 
-    if (static_cast<uint32_t>(index) < _document_count - 1) {
-        memmove(&_documents[index], &_documents[index + 1],
-                (_document_count - index - 1) * sizeof(Document));
+    for (uint32_t i = static_cast<uint32_t>(index); i < _document_count - 1; ++i) {
+        _documents[i] = _documents[i + 1];
     }
+    _documents[_document_count - 1] = nullptr;
     --_document_count;
 
     if (_active_id == id) {
         if (_document_count > 0) {
-            uint32_t new_idx = (index > 0) ? index - 1 : 0;
-            _active_id = _documents[new_idx].get_id();
+            uint32_t new_idx = (index > 0) ? static_cast<uint32_t>(index - 1) : 0;
+            _active_id = _documents[new_idx]->get_id();
             if (_tab_bar) {
-                _tab_bar->set_active_tab(_documents[new_idx].get_tab_id());
+                _tab_bar->set_active_tab(_documents[new_idx]->get_tab_id());
             }
         } else {
             _active_id = INVALID_DOCUMENT_ID;
@@ -188,8 +201,8 @@ const Document* DocumentManager::get_active_document() const {
 
 Document* DocumentManager::get_document(DocumentID id) {
     for (uint32_t i = 0; i < _document_count; ++i) {
-        if (_documents[i].get_id() == id) {
-            return &_documents[i];
+        if (_documents[i] && _documents[i]->get_id() == id) {
+            return _documents[i];
         }
     }
     return nullptr;
@@ -197,8 +210,8 @@ Document* DocumentManager::get_document(DocumentID id) {
 
 const Document* DocumentManager::get_document(DocumentID id) const {
     for (uint32_t i = 0; i < _document_count; ++i) {
-        if (_documents[i].get_id() == id) {
-            return &_documents[i];
+        if (_documents[i] && _documents[i]->get_id() == id) {
+            return _documents[i];
         }
     }
     return nullptr;
@@ -206,8 +219,8 @@ const Document* DocumentManager::get_document(DocumentID id) const {
 
 Document* DocumentManager::find_by_path(const char* filepath) {
     for (uint32_t i = 0; i < _document_count; ++i) {
-        if (strcmp(_documents[i].get_filepath(), filepath) == 0) {
-            return &_documents[i];
+        if (_documents[i] && strcmp(_documents[i]->get_filepath(), filepath) == 0) {
+            return _documents[i];
         }
     }
     return nullptr;
@@ -215,8 +228,8 @@ Document* DocumentManager::find_by_path(const char* filepath) {
 
 Document* DocumentManager::find_by_tab(TabID tab_id) {
     for (uint32_t i = 0; i < _document_count; ++i) {
-        if (_documents[i].get_tab_id() == tab_id) {
-            return &_documents[i];
+        if (_documents[i] && _documents[i]->get_tab_id() == tab_id) {
+            return _documents[i];
         }
     }
     return nullptr;
@@ -224,7 +237,7 @@ Document* DocumentManager::find_by_tab(TabID tab_id) {
 
 bool DocumentManager::has_unsaved_changes() const {
     for (uint32_t i = 0; i < _document_count; ++i) {
-        if (_documents[i].is_modified()) {
+        if (_documents[i] && _documents[i]->is_modified()) {
             return true;
         }
     }
