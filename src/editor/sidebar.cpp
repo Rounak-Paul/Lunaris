@@ -177,7 +177,11 @@ void Sidebar::draw_explorer() {
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(text_dim.r, text_dim.g, text_dim.b, 1.0f));
         ImGui::TextUnformatted(_file_tree->get_root_name());
         ImGui::PopStyleColor();
-        ImGui::SameLine(ImGui::GetContentRegionAvail().x - 80.0f);
+        float toolbar_width = 100.0f * ImGui::GetIO().FontGlobalScale;
+        float avail_x = ImGui::GetContentRegionAvail().x;
+        if (toolbar_width < avail_x) {
+            ImGui::SameLine(avail_x - toolbar_width);
+        }
         _file_tree->draw_toolbar();
         ImGui::EndGroup();
 

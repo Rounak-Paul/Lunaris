@@ -201,16 +201,17 @@ void FileTree::draw_toolbar() {
     Color text_dim = _theme ? _theme->get_text_dim() : Color(0.5f, 0.5f, 0.52f);
     Color accent = _theme ? _theme->get_accent() : Color(0.3f, 0.5f, 0.8f);
 
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4.0f, 4.0f));
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2.0f, 0.0f));
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(3.0f, 3.0f));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(accent.r, accent.g, accent.b, 0.2f));
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(accent.r, accent.g, accent.b, 0.3f));
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(text_dim.r, text_dim.g, text_dim.b, 1.0f));
 
-    float icon_size = 18.0f;
+    float icon_scale = 0.85f;
+    ImGui::SetWindowFontScale(icon_scale);
 
-    if (ImGui::Button(ICON_FA_FILE_CIRCLE_PLUS, ImVec2(icon_size, icon_size))) {
+    if (ImGui::Button(ICON_FA_FILE_CIRCLE_PLUS)) {
         _context_node = _root;
         _new_item_buffer[0] = '\0';
         _show_new_file_popup = true;
@@ -218,7 +219,7 @@ void FileTree::draw_toolbar() {
     if (ImGui::IsItemHovered()) ImGui::SetTooltip("New File");
 
     ImGui::SameLine();
-    if (ImGui::Button(ICON_FA_FOLDER_PLUS, ImVec2(icon_size, icon_size))) {
+    if (ImGui::Button(ICON_FA_FOLDER_PLUS)) {
         _context_node = _root;
         _new_item_buffer[0] = '\0';
         _show_new_folder_popup = true;
@@ -226,17 +227,18 @@ void FileTree::draw_toolbar() {
     if (ImGui::IsItemHovered()) ImGui::SetTooltip("New Folder");
 
     ImGui::SameLine();
-    if (ImGui::Button(ICON_FA_ARROWS_ROTATE, ImVec2(icon_size, icon_size))) {
+    if (ImGui::Button(ICON_FA_ARROWS_ROTATE)) {
         refresh();
     }
     if (ImGui::IsItemHovered()) ImGui::SetTooltip("Refresh");
 
     ImGui::SameLine();
-    if (ImGui::Button(ICON_FA_COMPRESS, ImVec2(icon_size, icon_size))) {
+    if (ImGui::Button(ICON_FA_COMPRESS)) {
         collapse_all(_root);
     }
     if (ImGui::IsItemHovered()) ImGui::SetTooltip("Collapse All");
 
+    ImGui::SetWindowFontScale(1.0f);
     ImGui::PopStyleColor(4);
     ImGui::PopStyleVar(2);
 }
@@ -446,6 +448,8 @@ void FileTree::draw_context_menu() {
         _show_context_menu = false;
     }
 
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8.0f, 8.0f));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(8.0f, 6.0f));
     if (ImGui::BeginPopup("##FileTreeContext")) {
         FileNode* target = _context_node ? _context_node : _root;
         FileNode* parent_folder = target->is_directory ? target : target->parent;
@@ -486,6 +490,7 @@ void FileTree::draw_context_menu() {
 
         ImGui::EndPopup();
     }
+    ImGui::PopStyleVar(2);
 
     if (_show_new_file_popup) {
         ImGui::OpenPopup("New File##popup");
