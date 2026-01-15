@@ -75,7 +75,8 @@ void Sidebar::on_ui() {
 
         ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(content_bg.r, content_bg.g, content_bg.b, 1.0f));
         ImGui::BeginChild("##SidebarContent", ImVec2(_content_width, total_h), false, ImGuiWindowFlags_NoScrollbar);
-        ImGui::SetCursorPos(ImVec2(12.0f, 12.0f));
+        float pad = ImGui::GetFontSize() * 0.75f;
+        ImGui::SetCursorPos(ImVec2(pad, pad));
         ImGui::BeginGroup();
         switch (_active_panel) {
             case SidebarPanel::Explorer:
@@ -117,11 +118,12 @@ void Sidebar::draw_panel_tabs() {
         { SidebarPanel::Extensions, ICON_FA_PUZZLE_PIECE, "Extensions" }
     };
 
-    constexpr float BTN_SIZE = 24.0f;
-    constexpr float PADDING = 8.0f;
-    constexpr float SPACING = 6.0f;
+    float font_size = ImGui::GetFontSize();
+    float btn_size = font_size * 1.5f;
+    float padding = font_size * 0.5f;
+    float spacing = font_size * 0.375f;
 
-    ImGui::SetCursorPos(ImVec2(PADDING, 12.0f));
+    ImGui::SetCursorPos(ImVec2(padding, font_size * 0.75f));
 
     for (int i = 0; i < 5; ++i) {
         const auto& p = panels[i];
@@ -141,15 +143,16 @@ void Sidebar::draw_panel_tabs() {
 
         if (is_active) {
             ImVec2 pos = ImGui::GetCursorScreenPos();
+            float indicator_w = font_size * 0.125f;
             ImGui::GetWindowDrawList()->AddRectFilled(
-                ImVec2(pos.x - PADDING, pos.y + 2.0f),
-                ImVec2(pos.x - PADDING + 2.0f, pos.y + BTN_SIZE - 2.0f),
+                ImVec2(pos.x - padding, pos.y + indicator_w),
+                ImVec2(pos.x - padding + indicator_w, pos.y + btn_size - indicator_w),
                 ImGui::ColorConvertFloat4ToU32(ImVec4(accent.r, accent.g, accent.b, 1.0f)),
-                1.0f
+                0.0f
             );
         }
 
-        if (ImGui::Button(p.icon, ImVec2(BTN_SIZE, BTN_SIZE))) {
+        if (ImGui::Button(p.icon, ImVec2(btn_size, btn_size))) {
             _active_panel = p.panel;
         }
         if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
@@ -161,8 +164,8 @@ void Sidebar::draw_panel_tabs() {
         ImGui::PopID();
 
         if (i < 4) {
-            ImGui::SetCursorPosX(PADDING);
-            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + SPACING);
+            ImGui::SetCursorPosX(padding);
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + spacing);
         }
     }
 }
@@ -212,9 +215,10 @@ void Sidebar::draw_explorer() {
         ImGui::Spacing();
         ImGui::Spacing();
 
-        float btn_w = avail_w - 24.0f;
-        if (btn_w < 80.0f) btn_w = 80.0f;
-        if (btn_w > 140.0f) btn_w = 140.0f;
+        float font_size = ImGui::GetFontSize();
+        float btn_w = avail_w - font_size * 1.5f;
+        if (btn_w < font_size * 5.0f) btn_w = font_size * 5.0f;
+        if (btn_w > font_size * 9.0f) btn_w = font_size * 9.0f;
 
         ImGui::SetCursorPosX((avail_w - btn_w) * 0.5f);
 
@@ -222,10 +226,10 @@ void Sidebar::draw_explorer() {
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(accent.r * 0.25f, accent.g * 0.25f, accent.b * 0.25f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(accent.r * 0.35f, accent.g * 0.35f, accent.b * 0.35f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(text.r, text.g, text.b, 1.0f));
-        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 8.0f));
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 3.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, font_size * 0.5f));
+        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
 
-        if (ImGui::Button("Open Folder", ImVec2(btn_w, 0))) {
+        if (ui::raised_button("Open Folder", ImVec2(btn_w, 0))) {
             open_folder();
         }
 
@@ -278,9 +282,10 @@ void Sidebar::draw_search() {
 
     ImGui::Spacing();
 
+    float font_size = ImGui::GetFontSize();
     ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(bg_input.r, bg_input.g, bg_input.b, 1.0f));
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8.0f, 6.0f));
-    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(font_size * 0.5f, font_size * 0.375f));
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
 
     ImGui::SetNextItemWidth(-1);
     ImGui::InputTextWithHint("##search_input", "Search...", _search_buffer, sizeof(_search_buffer));
@@ -296,17 +301,18 @@ void Sidebar::set_content_width(float w) {
 }
 
 void Sidebar::draw_resize_handle(float sidebar_start_x, float sidebar_start_y, float total_height) {
-    constexpr float HANDLE_WIDTH = 12.0f;
-    constexpr float CAPSULE_WIDTH = 3.0f;
-    constexpr float CAPSULE_HEIGHT = 32.0f;
+    float font_size = ImGui::GetFontSize();
+    float handle_width = font_size * 0.75f;
+    float capsule_width = font_size * 0.1875f;
+    float capsule_height = font_size * 2.0f;
 
     Color border = _theme ? _theme->get_border() : Color(0.2f, 0.2f, 0.22f);
     Color accent = _theme ? _theme->get_accent() : Color(0.3f, 0.5f, 0.8f);
     Color text_dim = _theme ? _theme->get_text_dim() : Color(0.5f, 0.5f, 0.52f);
 
     float line_x = sidebar_start_x + ICON_BAR_WIDTH + _content_width;
-    float handle_min_x = line_x - HANDLE_WIDTH * 0.5f;
-    float handle_max_x = line_x + HANDLE_WIDTH * 0.5f;
+    float handle_min_x = line_x - handle_width * 0.5f;
+    float handle_max_x = line_x + handle_width * 0.5f;
     float handle_min_y = sidebar_start_y;
     float handle_max_y = sidebar_start_y + total_height;
 
@@ -369,13 +375,13 @@ void Sidebar::draw_resize_handle(float sidebar_start_x, float sidebar_start_y, f
         );
     }
 
-    float capsule_x = line_x - CAPSULE_WIDTH * 0.5f;
-    float capsule_y = handle_min_y + (total_height - CAPSULE_HEIGHT) * 0.5f;
+    float capsule_x = line_x - capsule_width * 0.5f;
+    float capsule_y = handle_min_y + (total_height - capsule_height) * 0.5f;
     draw_list->AddRectFilled(
         ImVec2(capsule_x, capsule_y),
-        ImVec2(capsule_x + CAPSULE_WIDTH, capsule_y + CAPSULE_HEIGHT),
+        ImVec2(capsule_x + capsule_width, capsule_y + capsule_height),
         capsule_color,
-        CAPSULE_WIDTH * 0.5f
+        capsule_width * 0.5f
     );
 }
 

@@ -459,7 +459,8 @@ void EditorLayer::register_builtin_commands() {
 void EditorLayer::setup_layout() {
     ImGuiViewport* viewport = ImGui::GetMainViewport();
 
-    constexpr float STATUS_HEIGHT = 24.0f;
+    float font_size = ImGui::GetFontSize();
+    float status_height = font_size * 1.5f;
     float sidebar_width = _sidebar ? _sidebar->get_width() : 0.0f;
     float panel_height = (_bottom_panel && _bottom_panel->is_visible()) ? _bottom_panel->get_height() : 0.0f;
 
@@ -477,7 +478,7 @@ void EditorLayer::setup_layout() {
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
 
     ImGui::SetNextWindowPos(viewport->WorkPos);
-    ImGui::SetNextWindowSize(ImVec2(viewport->WorkSize.x, viewport->WorkSize.y - STATUS_HEIGHT));
+    ImGui::SetNextWindowSize(ImVec2(viewport->WorkSize.x, viewport->WorkSize.y - status_height));
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(bg.r, bg.g, bg.b, 1.0f));
 
     if (ImGui::Begin("##MainLayout", nullptr, layout_flags)) {
@@ -519,13 +520,13 @@ void EditorLayer::setup_layout() {
     ImGui::End();
     ImGui::PopStyleColor();
 
-    ImGui::SetNextWindowPos(ImVec2(viewport->WorkPos.x, viewport->WorkPos.y + viewport->WorkSize.y - STATUS_HEIGHT));
-    ImGui::SetNextWindowSize(ImVec2(viewport->WorkSize.x, STATUS_HEIGHT));
+    ImGui::SetNextWindowPos(ImVec2(viewport->WorkPos.x, viewport->WorkPos.y + viewport->WorkSize.y - status_height));
+    ImGui::SetNextWindowSize(ImVec2(viewport->WorkSize.x, status_height));
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(surface.r, surface.g, surface.b, 1.0f));
 
     if (ImGui::Begin("##StatusBar", nullptr, layout_flags)) {
-        float y = (STATUS_HEIGHT - ImGui::GetTextLineHeight()) * 0.5f;
-        ImGui::SetCursorPos(ImVec2(12.0f, y));
+        float y = (status_height - ImGui::GetTextLineHeight()) * 0.5f;
+        ImGui::SetCursorPos(ImVec2(font_size * 0.75f, y));
         if (_status_bar) {
             _status_bar->on_ui();
         }

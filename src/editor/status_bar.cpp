@@ -109,7 +109,7 @@ void StatusBar::draw_left_section() {
 
 void StatusBar::draw_center_section() {
     if (_show_progress) {
-        float progress_width = 200.0f;
+        float progress_width = ImGui::GetFontSize() * 12.5f;
         if (_progress_label[0] != '\0') {
             ImGui::Text("%s", _progress_label);
             ImGui::SameLine();

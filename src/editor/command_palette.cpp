@@ -72,8 +72,9 @@ void CommandPalette::on_ui() {
     }
 
     ImGuiViewport* viewport = ImGui::GetMainViewport();
+    float font_size = ImGui::GetFontSize();
     float palette_x = viewport->WorkPos.x + (viewport->WorkSize.x - WIDTH) * 0.5f;
-    float palette_y = viewport->WorkPos.y + 80.0f;
+    float palette_y = viewport->WorkPos.y + font_size * 5.0f;
 
     Color bg = _theme ? _theme->get_surface() : Color(0.12f, 0.12f, 0.14f);
     Color border = _theme ? _theme->get_border() : Color(0.25f, 0.25f, 0.28f);
@@ -90,7 +91,7 @@ void CommandPalette::on_ui() {
                            | ImGuiWindowFlags_NoSavedSettings
                            | ImGuiWindowFlags_AlwaysAutoResize;
 
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(bg.r, bg.g, bg.b, 0.98f));
@@ -128,7 +129,8 @@ void CommandPalette::draw_input() {
     Color text = _theme ? _theme->get_text() : Color(0.9f, 0.9f, 0.92f);
     Color text_dim = _theme ? _theme->get_text_dim() : Color(0.5f, 0.5f, 0.52f);
 
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(12.0f, 12.0f));
+    float font_size = ImGui::GetFontSize();
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(font_size * 0.75f, font_size * 0.75f));
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
     ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(bg_input.r, bg_input.g, bg_input.b, 1.0f));
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(text.r, text.g, text.b, 1.0f));
@@ -164,12 +166,13 @@ void CommandPalette::draw_results() {
     Color text_dim = _theme ? _theme->get_text_dim() : Color(0.5f, 0.5f, 0.52f);
     Color accent = _theme ? _theme->get_accent() : Color(0.3f, 0.5f, 0.8f);
 
+    float font_size_r = ImGui::GetFontSize();
     float results_height = _result_count * ITEM_HEIGHT;
-    if (results_height > MAX_HEIGHT - 48.0f) {
-        results_height = MAX_HEIGHT - 48.0f;
+    if (results_height > MAX_HEIGHT - font_size_r * 3.0f) {
+        results_height = MAX_HEIGHT - font_size_r * 3.0f;
     }
 
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 4.0f));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, font_size_r * 0.25f));
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0, 0, 0, 0));
 
     if (ImGui::BeginChild("##results", ImVec2(WIDTH, results_height), false)) {
@@ -200,7 +203,7 @@ void CommandPalette::draw_results() {
             ImGui::PopID();
             ImGui::PopStyleColor(3);
 
-            ImGui::SetCursorScreenPos(ImVec2(item_pos.x + 16.0f, item_pos.y + (ITEM_HEIGHT - ImGui::GetTextLineHeight()) * 0.5f));
+            ImGui::SetCursorScreenPos(ImVec2(item_pos.x + font_size_r, item_pos.y + (ITEM_HEIGHT - ImGui::GetTextLineHeight()) * 0.5f));
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(text.r, text.g, text.b, 1.0f));
             ImGui::TextUnformatted(cmd->get_name());
             ImGui::PopStyleColor();
@@ -208,7 +211,7 @@ void CommandPalette::draw_results() {
             const char* shortcut = cmd->get_shortcut();
             if (shortcut && shortcut[0] != '\0') {
                 float shortcut_width = ImGui::CalcTextSize(shortcut).x;
-                ImGui::SetCursorScreenPos(ImVec2(item_pos.x + WIDTH - shortcut_width - 16.0f, 
+                ImGui::SetCursorScreenPos(ImVec2(item_pos.x + WIDTH - shortcut_width - font_size_r, 
                                                   item_pos.y + (ITEM_HEIGHT - ImGui::GetTextLineHeight()) * 0.5f));
                 ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(text_dim.r, text_dim.g, text_dim.b, 1.0f));
                 ImGui::TextUnformatted(shortcut);

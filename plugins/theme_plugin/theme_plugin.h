@@ -1,16 +1,13 @@
 #pragma once
 
 #include "lunaris/plugin/plugin.h"
+#include "lunaris/core/theme.h"
 
 namespace lunaris {
 
-class Theme;
-
 enum class ThemePreset : uint8_t {
-    Default,
-    Minimalist,
     Retro,
-    Count
+    DarkMinimalist
 };
 
 class ThemePlugin : public Plugin {
@@ -27,14 +24,14 @@ public:
     void set_preset(ThemePreset preset);
     ThemePreset get_current_preset() const { return _current_preset; }
 
+    static ThemeConfig make_retro();
+    static ThemeConfig make_dark_minimalist();
+
     static const char* get_preset_name(ThemePreset preset);
     static ThemePlugin* instance() { return s_instance; }
 
 private:
     void register_commands();
-    void apply_default(Theme* theme);
-    void apply_minimalist(Theme* theme);
-    void apply_retro(Theme* theme);
 
     ThemePreset _current_preset;
     static ThemePlugin* s_instance;

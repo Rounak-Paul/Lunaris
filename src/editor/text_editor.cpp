@@ -46,7 +46,8 @@ void TextEditor::set_document(Document* doc) {
 }
 
 float TextEditor::get_gutter_width() const {
-    if (!_document) return 60.0f;
+    float font_size = ImGui::GetFontSize();
+    if (!_document) return font_size * 3.75f;
     
     uint32_t line_count = _document->get_buffer()->get_line_count();
     int digits = 1;
@@ -263,11 +264,14 @@ void TextEditor::draw_cursor(float x, float y) {
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
     
     Color text_col = _theme ? _theme->get_text() : Color(0.9f, 0.9f, 0.92f);
+    float font_size = ImGui::GetFontSize();
     
     uint32_t cursor_line = buffer->get_line_at_pos(_cursor_pos);
     size_t line_start = buffer->get_line_start(cursor_line);
     
-    float cursor_x = x - _scroll_x - 2.0f;
+    float cursor_offset = font_size * 0.125f;
+    float cursor_width = font_size * 0.125f;
+    float cursor_x = x - _scroll_x - cursor_offset;
     if (_cursor_pos > line_start) {
         const char* text = buffer->get_text();
         cursor_x += ImGui::CalcTextSize(text + line_start, text + _cursor_pos).x;
@@ -279,8 +283,8 @@ void TextEditor::draw_cursor(float x, float y) {
     float cursor_y = y + cursor_line * line_h - _scroll_y + text_offset_y;
     
     draw_list->AddRectFilled(
-        ImVec2(cursor_x, cursor_y - 1.0f),
-        ImVec2(cursor_x + 2.0f, cursor_y + font_h + 1.0f),
+        ImVec2(cursor_x, cursor_y - cursor_offset),
+        ImVec2(cursor_x + cursor_width, cursor_y + font_h + cursor_offset),
         ImColor(text_col.r, text_col.g, text_col.b, 1.0f));
 }
 

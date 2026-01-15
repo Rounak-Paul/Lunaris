@@ -1,6 +1,7 @@
 #include "lunaris/editor/file_tree.h"
 #include "lunaris/editor/file_operations.h"
 #include "lunaris/core/theme.h"
+#include "lunaris/ui/components.h"
 #include <imgui.h>
 #include <tinyvk/core/file_dialog.h>
 #include <tinyvk/assets/icons_font_awesome.h>
@@ -198,49 +199,40 @@ FileNode* FileTree::find_node_recursive(FileNode* node, const char* path) {
 void FileTree::draw_toolbar() {
     if (!_root) return;
 
-    Color text_dim = _theme ? _theme->get_text_dim() : Color(0.5f, 0.5f, 0.52f);
-    Color accent = _theme ? _theme->get_accent() : Color(0.3f, 0.5f, 0.8f);
-
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(3.0f, 3.0f));
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
-    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(accent.r, accent.g, accent.b, 0.2f));
-    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(accent.r, accent.g, accent.b, 0.3f));
-    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(text_dim.r, text_dim.g, text_dim.b, 1.0f));
-
-    float icon_scale = 0.85f;
+    float font_size = ImGui::GetFontSize();
+    float btn_size = font_size * 1.2f;
+    float spacing = font_size * 0.25f;
+    float icon_scale = 0.65f;
     ImGui::SetWindowFontScale(icon_scale);
 
-    if (ImGui::Button(ICON_FA_FILE_CIRCLE_PLUS)) {
+    if (ui::raised_icon_button(ICON_FA_FILE_CIRCLE_PLUS "##newfile", ImVec2(btn_size, btn_size))) {
         _context_node = _root;
         _new_item_buffer[0] = '\0';
         _show_new_file_popup = true;
     }
     if (ImGui::IsItemHovered()) ImGui::SetTooltip("New File");
 
-    ImGui::SameLine();
-    if (ImGui::Button(ICON_FA_FOLDER_PLUS)) {
+    ImGui::SameLine(0.0f, spacing);
+    if (ui::raised_icon_button(ICON_FA_FOLDER_PLUS "##newfolder", ImVec2(btn_size, btn_size))) {
         _context_node = _root;
         _new_item_buffer[0] = '\0';
         _show_new_folder_popup = true;
     }
     if (ImGui::IsItemHovered()) ImGui::SetTooltip("New Folder");
 
-    ImGui::SameLine();
-    if (ImGui::Button(ICON_FA_ARROWS_ROTATE)) {
+    ImGui::SameLine(0.0f, spacing);
+    if (ui::raised_icon_button(ICON_FA_ARROWS_ROTATE "##refresh", ImVec2(btn_size, btn_size))) {
         refresh();
     }
     if (ImGui::IsItemHovered()) ImGui::SetTooltip("Refresh");
 
-    ImGui::SameLine();
-    if (ImGui::Button(ICON_FA_COMPRESS)) {
+    ImGui::SameLine(0.0f, spacing);
+    if (ui::raised_icon_button(ICON_FA_COMPRESS "##collapse", ImVec2(btn_size, btn_size))) {
         collapse_all(_root);
     }
     if (ImGui::IsItemHovered()) ImGui::SetTooltip("Collapse All");
 
     ImGui::SetWindowFontScale(1.0f);
-    ImGui::PopStyleColor(4);
-    ImGui::PopStyleVar(2);
 }
 
 void FileTree::on_ui() {
@@ -267,7 +259,8 @@ void FileTree::draw_node(FileNode* node, int depth, uint32_t continuation_mask) 
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
     ImVec2 cursor = ImGui::GetCursorScreenPos();
     float line_height = ImGui::GetTextLineHeightWithSpacing();
-    float indent_width = 16.0f;
+    float font_size = ImGui::GetFontSize();
+    float indent_width = font_size;
     float half_height = line_height * 0.5f;
 
     ImU32 line_color = IM_COL32(
@@ -319,7 +312,8 @@ void FileTree::draw_node(FileNode* node, int depth, uint32_t continuation_mask) 
 
     ImGui::PushID(node->path);
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 2.0f));
+    float item_space = font_size * 0.125f;
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, item_space));
     ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(accent.r, accent.g, accent.b, 0.15f));
     ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(accent.r, accent.g, accent.b, 0.2f));
     ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4(accent.r, accent.g, accent.b, 0.3f));
@@ -327,9 +321,10 @@ void FileTree::draw_node(FileNode* node, int depth, uint32_t continuation_mask) 
     bool is_open = node->is_expanded;
 
     if (node->is_directory) {
-        float circle_radius = 4.0f;
+        float circle_radius = font_size * 0.25f;
         ImVec2 circle_pos = ImGui::GetCursorScreenPos();
-        circle_pos.x += circle_radius + 1.0f;
+        float circle_offset = font_size * 0.0625f;
+        circle_pos.x += circle_radius + circle_offset;
         circle_pos.y += line_height * 0.5f;
 
         ImU32 circle_color = IM_COL32(
@@ -339,7 +334,7 @@ void FileTree::draw_node(FileNode* node, int depth, uint32_t continuation_mask) 
             200
         );
 
-        ImGui::InvisibleButton("##toggle", ImVec2(circle_radius * 2.0f + 4.0f, line_height));
+        ImGui::InvisibleButton("##toggle", ImVec2(circle_radius * 2.0f + font_size * 0.25f, line_height));
         if (ImGui::IsItemClicked()) {
             is_open = !is_open;
             node->is_expanded = is_open;
@@ -351,10 +346,10 @@ void FileTree::draw_node(FileNode* node, int depth, uint32_t continuation_mask) 
             draw_list->AddCircle(circle_pos, circle_radius, circle_color, 0, 1.5f);
         }
 
-        ImGui::SameLine(0.0f, 4.0f);
+        ImGui::SameLine(0.0f, font_size * 0.25f);
     } else {
-        ImGui::Dummy(ImVec2(12.0f, 0.0f));
-        ImGui::SameLine(0.0f, 4.0f);
+        ImGui::Dummy(ImVec2(font_size * 0.75f, 0.0f));
+        ImGui::SameLine(0.0f, font_size * 0.25f);
     }
 
     const char* icon;
@@ -370,8 +365,7 @@ void FileTree::draw_node(FileNode* node, int depth, uint32_t continuation_mask) 
 
     ImVec2 row_start = ImGui::GetCursorScreenPos();
 
-    float font_size = ImGui::GetFontSize();
-    float icon_scale = 0.8f;
+    float icon_scale = 0.85f;
     float scaled_size = font_size * icon_scale;
     float y_offset = (font_size - scaled_size) * 0.5f;
 
@@ -380,7 +374,7 @@ void FileTree::draw_node(FileNode* node, int depth, uint32_t continuation_mask) 
     ImGui::SetWindowFontScale(icon_scale);
     ImGui::TextColored(icon_col, "%s", icon);
     ImGui::SetWindowFontScale(1.0f);
-    ImGui::SameLine(0.0f, 4.0f);
+    ImGui::SameLine(0.0f, font_size * 0.25f);
     ImGui::SetCursorPosY(icon_pos.y);
 
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(text.r, text.g, text.b, 1.0f));
@@ -388,9 +382,9 @@ void FileTree::draw_node(FileNode* node, int depth, uint32_t continuation_mask) 
     bool is_selected = (_selected_node == node);
     if (is_selected) {
         ImVec2 sel_start = row_start;
-        sel_start.x -= 4.0f;
+        sel_start.x -= font_size * 0.25f;
         ImVec2 sel_end = sel_start;
-        sel_end.x += ImGui::GetContentRegionAvail().x + 50.0f;
+        sel_end.x += ImGui::GetContentRegionAvail().x + font_size * 3.125f;
         sel_end.y += line_height;
         draw_list->AddRectFilled(sel_start, sel_end, IM_COL32((int)(accent.r * 255), (int)(accent.g * 255), (int)(accent.b * 255), 40));
     }
@@ -398,7 +392,7 @@ void FileTree::draw_node(FileNode* node, int depth, uint32_t continuation_mask) 
     ImGui::TextUnformatted(node->name);
 
     ImVec2 row_end = ImGui::GetCursorScreenPos();
-    row_end.x = row_start.x + ImGui::GetContentRegionAvail().x + 50.0f;
+    row_end.x = row_start.x + ImGui::GetContentRegionAvail().x + font_size * 3.125f;
     row_end.y = row_start.y + line_height;
 
     bool row_hovered = ImGui::IsMouseHoveringRect(row_start, row_end);
@@ -448,8 +442,9 @@ void FileTree::draw_context_menu() {
         _show_context_menu = false;
     }
 
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8.0f, 8.0f));
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(8.0f, 6.0f));
+    float ctx_font_size = ImGui::GetFontSize();
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(ctx_font_size * 0.5f, ctx_font_size * 0.5f));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(ctx_font_size * 0.5f, ctx_font_size * 0.375f));
     if (ImGui::BeginPopup("##FileTreeContext")) {
         FileNode* target = _context_node ? _context_node : _root;
         FileNode* parent_folder = target->is_directory ? target : target->parent;
@@ -502,7 +497,7 @@ void FileTree::draw_context_menu() {
         ImGui::SetKeyboardFocusHere();
         bool enter = ImGui::InputText("##newfile", _new_item_buffer, sizeof(_new_item_buffer), ImGuiInputTextFlags_EnterReturnsTrue);
 
-        if (ImGui::Button("Create") || enter) {
+        if (ui::raised_button("Create") || enter) {
             if (_new_item_buffer[0] != '\0' && _file_ops && _context_node) {
                 char path[FileNode::MAX_PATH_LENGTH];
                 snprintf(path, sizeof(path), "%s/%s", _context_node->path, _new_item_buffer);
@@ -511,7 +506,7 @@ void FileTree::draw_context_menu() {
             ImGui::CloseCurrentPopup();
         }
         ImGui::SameLine();
-        if (ImGui::Button("Cancel")) {
+        if (ui::raised_button("Cancel")) {
             ImGui::CloseCurrentPopup();
         }
         ImGui::EndPopup();
@@ -527,7 +522,7 @@ void FileTree::draw_context_menu() {
         ImGui::SetKeyboardFocusHere();
         bool enter = ImGui::InputText("##newfolder", _new_item_buffer, sizeof(_new_item_buffer), ImGuiInputTextFlags_EnterReturnsTrue);
 
-        if (ImGui::Button("Create") || enter) {
+        if (ui::raised_button("Create") || enter) {
             if (_new_item_buffer[0] != '\0' && _file_ops && _context_node) {
                 char path[FileNode::MAX_PATH_LENGTH];
                 snprintf(path, sizeof(path), "%s/%s", _context_node->path, _new_item_buffer);
@@ -536,7 +531,7 @@ void FileTree::draw_context_menu() {
             ImGui::CloseCurrentPopup();
         }
         ImGui::SameLine();
-        if (ImGui::Button("Cancel")) {
+        if (ui::raised_button("Cancel")) {
             ImGui::CloseCurrentPopup();
         }
         ImGui::EndPopup();
@@ -552,7 +547,7 @@ void FileTree::draw_context_menu() {
         ImGui::SetKeyboardFocusHere();
         bool enter = ImGui::InputText("##rename", _rename_buffer, sizeof(_rename_buffer), ImGuiInputTextFlags_EnterReturnsTrue);
 
-        if (ImGui::Button("Rename") || enter) {
+        if (ui::raised_button("Rename") || enter) {
             if (_rename_buffer[0] != '\0' && _file_ops && _context_node && _context_node->parent) {
                 char new_path[FileNode::MAX_PATH_LENGTH];
                 snprintf(new_path, sizeof(new_path), "%s/%s", _context_node->parent->path, _rename_buffer);
@@ -565,7 +560,7 @@ void FileTree::draw_context_menu() {
             ImGui::CloseCurrentPopup();
         }
         ImGui::SameLine();
-        if (ImGui::Button("Cancel")) {
+        if (ui::raised_button("Cancel")) {
             ImGui::CloseCurrentPopup();
         }
         ImGui::EndPopup();

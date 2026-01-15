@@ -150,19 +150,14 @@ void MenuBar::draw_view_menu() {
 
         if (ImGui::BeginMenu("Appearance")) {
             if (ImGui::BeginMenu("Theme")) {
-                if (ImGui::MenuItem("Default")) {
-                    if (_command_registry) {
-                        _command_registry->execute_command_by_name("Theme: Default");
-                    }
-                }
-                if (ImGui::MenuItem("Minimalist")) {
-                    if (_command_registry) {
-                        _command_registry->execute_command_by_name("Theme: Minimalist");
-                    }
-                }
                 if (ImGui::MenuItem("Retro")) {
                     if (_command_registry) {
                         _command_registry->execute_command_by_name("Theme: Retro");
+                    }
+                }
+                if (ImGui::MenuItem("Dark Minimalist")) {
+                    if (_command_registry) {
+                        _command_registry->execute_command_by_name("Theme: Dark Minimalist");
                     }
                 }
                 ImGui::EndMenu();

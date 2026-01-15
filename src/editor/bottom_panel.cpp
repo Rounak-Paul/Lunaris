@@ -33,9 +33,10 @@ void BottomPanel::on_ui() {
     draw_tabs();
 
     float content_h = _height - TAB_HEIGHT;
+    float font_size = ImGui::GetFontSize();
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(bg.r, bg.g, bg.b, 1.0f));
     ImGui::BeginChild("##PanelContent", ImVec2(0.0f, content_h), false, ImGuiWindowFlags_NoScrollbar);
-    ImGui::SetCursorPos(ImVec2(12.0f, 8.0f));
+    ImGui::SetCursorPos(ImVec2(font_size * 0.75f, font_size * 0.5f));
     switch (_active_tab) {
         case BottomPanelTab::Terminal:
             draw_terminal();
@@ -73,7 +74,8 @@ void BottomPanel::draw_tabs() {
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(bg.r, bg.g, bg.b, 1.0f));
     ImGui::BeginChild("##PanelTabs", ImVec2(0.0f, TAB_HEIGHT), false, ImGuiWindowFlags_NoScrollbar);
 
-    ImGui::SetCursorPos(ImVec2(8.0f, 0.0f));
+    float font_size_tabs = ImGui::GetFontSize();
+    ImGui::SetCursorPos(ImVec2(font_size_tabs * 0.5f, 0.0f));
 
     for (int i = 0; i < 3; ++i) {
         if (i > 0) {
@@ -92,7 +94,7 @@ void BottomPanel::draw_tabs() {
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(accent.r, accent.g, accent.b, 0.1f));
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(accent.r, accent.g, accent.b, 0.2f));
         ImGui::PushStyleColor(ImGuiCol_Text, txt);
-        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(12.0f, (TAB_HEIGHT - ImGui::GetTextLineHeight()) * 0.5f));
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(font_size_tabs * 0.75f, (TAB_HEIGHT - ImGui::GetTextLineHeight()) * 0.5f));
         ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
 
         if (ImGui::Button(t.label)) {
@@ -100,10 +102,11 @@ void BottomPanel::draw_tabs() {
         }
 
         if (is_active) {
+            float indicator_h = font_size_tabs * 0.125f;
             ImVec2 min = ImGui::GetItemRectMin();
             ImVec2 max = ImGui::GetItemRectMax();
             ImGui::GetWindowDrawList()->AddRectFilled(
-                ImVec2(min.x, max.y - 2.0f),
+                ImVec2(min.x, max.y - indicator_h),
                 ImVec2(max.x, max.y),
                 ImGui::ColorConvertFloat4ToU32(ImVec4(accent.r, accent.g, accent.b, 1.0f))
             );

@@ -141,8 +141,9 @@ void TabBar::draw_tab(uint32_t index) {
         : ImVec4(text_dim.r, text_dim.g, text_dim.b, 1.0f);
 
     const char* title = tab.info.title ? tab.info.title : "Untitled";
+    float font_size = ImGui::GetFontSize();
     float text_w = ImGui::CalcTextSize(title).x;
-    float tab_w = text_w + 50.0f;
+    float tab_w = text_w + font_size * 3.125f;
     if (tab_w < TAB_MIN_WIDTH) tab_w = TAB_MIN_WIDTH;
     if (tab_w > TAB_MAX_WIDTH) tab_w = TAB_MAX_WIDTH;
 
@@ -164,19 +165,20 @@ void TabBar::draw_tab(uint32_t index) {
     }
 
     float text_y = pos.y + (TAB_HEIGHT - ImGui::GetTextLineHeight()) * 0.5f;
-    ImGui::GetWindowDrawList()->AddText(ImVec2(pos.x + 12.0f, text_y), ImGui::ColorConvertFloat4ToU32(txt_col), title);
+    ImGui::GetWindowDrawList()->AddText(ImVec2(pos.x + font_size * 0.75f, text_y), ImGui::ColorConvertFloat4ToU32(txt_col), title);
 
-    float close_x = pos.x + tab_w - 22.0f;
-    float close_y = pos.y + (TAB_HEIGHT - 14.0f) * 0.5f;
+    float close_size = font_size * 0.875f;
+    float close_x = pos.x + tab_w - close_size - font_size * 0.5f;
+    float close_y = pos.y + (TAB_HEIGHT - close_size) * 0.5f;
     ImVec2 close_min(close_x, close_y);
-    ImVec2 close_max(close_x + 14.0f, close_y + 14.0f);
+    ImVec2 close_max(close_x + close_size, close_y + close_size);
 
     bool close_hovered = ImGui::IsMouseHoveringRect(close_min, close_max);
 
     if (tab.info.modified && !close_hovered) {
         ImGui::GetWindowDrawList()->AddCircleFilled(
-            ImVec2(close_x + 7.0f, close_y + 7.0f),
-            3.0f,
+            ImVec2(close_x + close_size * 0.5f, close_y + close_size * 0.5f),
+            font_size * 0.1875f,
             ImGui::ColorConvertFloat4ToU32(ImVec4(text_dim.r, text_dim.g, text_dim.b, 1.0f))
         );
     } else {
@@ -185,7 +187,7 @@ void TabBar::draw_tab(uint32_t index) {
             : ImGui::ColorConvertFloat4ToU32(ImVec4(text_dim.r, text_dim.g, text_dim.b, 0.6f));
 
         if (is_active || close_hovered) {
-            ImGui::GetWindowDrawList()->AddText(ImVec2(close_x + 2.0f, close_y), close_col, ICON_FA_XMARK);
+            ImGui::GetWindowDrawList()->AddText(ImVec2(close_x + font_size * 0.125f, close_y), close_col, ICON_FA_XMARK);
         }
     }
 
@@ -196,8 +198,9 @@ void TabBar::draw_tab(uint32_t index) {
     }
 
     if (is_active) {
+        float indicator_h = font_size * 0.125f;
         ImGui::GetWindowDrawList()->AddRectFilled(
-            ImVec2(pos.x, pos.y + TAB_HEIGHT - 2.0f),
+            ImVec2(pos.x, pos.y + TAB_HEIGHT - indicator_h),
             ImVec2(pos.x + tab_w, pos.y + TAB_HEIGHT),
             ImGui::ColorConvertFloat4ToU32(ImVec4(accent.r, accent.g, accent.b, 1.0f))
         );

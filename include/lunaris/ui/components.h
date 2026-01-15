@@ -39,6 +39,11 @@ bool icon_button_with_tooltip(const char* icon, const char* id, const char* tool
 
 void draw_active_indicator(float height, float width = 3.0f);
 
+void draw_raised_border(ImVec2 min, ImVec2 max, float thickness = 2.0f);
+void draw_sunken_border(ImVec2 min, ImVec2 max, float thickness = 2.0f);
+bool raised_button(const char* label, ImVec2 size = ImVec2(0, 0));
+bool raised_icon_button(const char* icon, ImVec2 size = ImVec2(0, 0));
+
 void begin_disabled(bool disabled = true);
 void end_disabled();
 

@@ -22,7 +22,8 @@ void Workspace::on_update(float delta_time) {
 }
 
 void Workspace::on_ui() {
-    ImGui::SetCursorPos(ImVec2(16.0f, 16.0f));
+    float pad = ImGui::GetFontSize();
+    ImGui::SetCursorPos(ImVec2(pad, pad));
     ImGui::BeginGroup();
 
     if (_plugin_manager && _plugin_manager->get_plugin_count() > 0) {
